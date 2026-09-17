@@ -3,7 +3,13 @@ import { hoursBetween } from "@/lib/payroll";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatDateVn, formatTimeVn, todayIsoVn, toIsoDate } from "@/lib/date";
-import { ATTENDANCE_STATUS_LABELS, ATTENDANCE_STATUS_BADGE_CLASS, type Attendance, type Profile } from "@/lib/types/domain";
+import {
+  ATTENDANCE_STATUS_LABELS,
+  ATTENDANCE_STATUS_BADGE_CLASS,
+  type Attendance,
+  type PayrollAdjustment,
+  type Profile,
+} from "@/lib/types/domain";
 import { AttendanceFilterForm } from "./attendance-filter-form";
 import { AttendanceRecordDialog } from "./attendance-record-dialog";
 import { StatCard } from "./stat-card";
@@ -51,13 +57,23 @@ export default async function AttendancePage({
     query = query.in("employee_id", employees.map((e) => e.id));
   }
 
-  const { data } = await query;
+  const [{ data }, { data: adjustmentsData }] = await Promise.all([
+    query,
+    supabase
+      .from("payroll_adjustments")
+      .select("*")
+      .gte("period_start", from)
+      .lte("period_end", to),
+  ]);
   const rows = (data ?? []) as Attendance[];
+  const adjustments = (adjustmentsData ?? []) as PayrollAdjustment[];
 
   const totalShifts = rows.filter((r) => r.status === "on_time" || r.status === "late").length;
   const totalHours = rows.reduce((sum, r) => sum + hoursBetween(r.check_in_time, r.check_out_time), 0);
   const lateAbsentCount = rows.filter((r) => r.status === "late" || r.status === "absent").length;
-  const totalOt = rows.reduce((sum, r) => sum + Number(r.ot_hours ?? 0), 0);
+  const totalFines = adjustments
+    .filter((adjustment) => adjustment.type === "fine")
+    .reduce((sum, adjustment) => sum + Number(adjustment.amount), 0);
 
   return (
     <div className="flex flex-col gap-4">
@@ -82,7 +98,7 @@ export default async function AttendancePage({
         <StatCard label="Tổng số ca làm" value={totalShifts} />
         <StatCard label="Tổng số giờ làm" value={totalHours.toFixed(1)} />
         <StatCard label="Đi muộn / Vắng mặt" value={lateAbsentCount} />
-        <StatCard label="Tổng giờ OT" value={totalOt.toFixed(1)} />
+        <StatCard label="Tổng khoản phạt" value={`${totalFines.toLocaleString("vi-VN")} đ`} />
       </div>
 
       <div className="rounded-lg border">
@@ -94,7 +110,6 @@ export default async function AttendancePage({
               <TableHead>Trạng thái</TableHead>
               <TableHead>Giờ vào</TableHead>
               <TableHead>Giờ ra</TableHead>
-              <TableHead>OT</TableHead>
               <TableHead>Ghi chú</TableHead>
               <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
@@ -115,7 +130,6 @@ export default async function AttendancePage({
                 <TableCell>
                   {row.check_out_time ? formatTimeVn(row.check_out_time) : "-"}
                 </TableCell>
-                <TableCell>{row.ot_hours}</TableCell>
                 <TableCell className="max-w-40 truncate">{row.note ?? "-"}</TableCell>
                 <TableCell className="text-right">
                   <AttendanceRecordDialog
@@ -128,7 +142,7 @@ export default async function AttendancePage({
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
                   Không có dữ liệu chấm công trong khoảng thời gian này.
                 </TableCell>
               </TableRow>

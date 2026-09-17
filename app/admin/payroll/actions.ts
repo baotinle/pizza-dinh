@@ -43,5 +43,6 @@ export async function addAdjustment(
   if (error) return { error: error.message, success: false };
 
   revalidatePath("/admin/payroll");
+  revalidatePath("/employee/timesheet");
   return { error: null, success: true };
 }

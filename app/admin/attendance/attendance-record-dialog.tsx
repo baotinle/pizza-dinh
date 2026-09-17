@@ -119,17 +119,6 @@ export function AttendanceRecordDialog({
               defaultValue={toTimeInput(record?.check_out_time ?? null)}
             />
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="ot_hours">Giờ tăng ca (OT)</Label>
-            <Input
-              id="ot_hours"
-              name="ot_hours"
-              type="number"
-              min={0}
-              step={0.5}
-              defaultValue={record?.ot_hours ?? 0}
-            />
-          </div>
           <div className="col-span-2 flex flex-col gap-2">
             <Label htmlFor="note">Ghi chú / Lý do đi muộn</Label>
             <Input id="note" name="note" defaultValue={record?.note ?? ""} />

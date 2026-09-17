@@ -84,9 +84,11 @@ export default async function TimesheetPage({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Giờ OT</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Khoản phạt</CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">{summary.totalOtHours}</CardContent>
+          <CardContent className="text-2xl font-semibold">
+            {summary.fines.toLocaleString("vi-VN")} đ
+          </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
@@ -106,7 +108,6 @@ export default async function TimesheetPage({
               <TableHead>Trạng thái</TableHead>
               <TableHead>Giờ vào</TableHead>
               <TableHead>Giờ ra</TableHead>
-              <TableHead>OT</TableHead>
               <TableHead>Ghi chú</TableHead>
             </TableRow>
           </TableHeader>
@@ -125,14 +126,13 @@ export default async function TimesheetPage({
                 <TableCell>
                   {row.check_out_time ? formatTimeVn(row.check_out_time) : "-"}
                 </TableCell>
-                <TableCell>{row.ot_hours}</TableCell>
                 <TableCell>{row.note ?? "-"}</TableCell>
               </TableRow>
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
-                  Chưa có dữ liệu chấm công trong tháng này.
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  Chưa có dữ liệu chấm công trong kỳ này.
                 </TableCell>
               </TableRow>
             )}

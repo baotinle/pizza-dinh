@@ -72,7 +72,6 @@ export function PayrollTable({
               <TableHead>Nhân viên</TableHead>
               <TableHead>Giờ làm</TableHead>
               <TableHead>Số ca</TableHead>
-              <TableHead>Giờ OT</TableHead>
               <TableHead>Lương cơ bản</TableHead>
               <TableHead>Phụ cấp</TableHead>
               <TableHead>Phạt</TableHead>
@@ -87,7 +86,6 @@ export function PayrollTable({
                 <TableCell className="font-medium">{row.fullName}</TableCell>
                 <TableCell>{row.totalHours}</TableCell>
                 <TableCell>{row.totalShifts}</TableCell>
-                <TableCell>{row.totalOtHours}</TableCell>
                 <TableCell>{formatVnd(row.baseWage)}</TableCell>
                 <TableCell>{formatVnd(row.allowance)}</TableCell>
                 <TableCell className="text-destructive">{formatVnd(row.fines)}</TableCell>
@@ -104,7 +102,7 @@ export function PayrollTable({
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} className="text-center text-muted-foreground">
+                <TableCell colSpan={9} className="text-center text-muted-foreground">
                   Không có dữ liệu trong khoảng thời gian này.
                 </TableCell>
               </TableRow>

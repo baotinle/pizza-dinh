@@ -5,7 +5,6 @@ export interface PayrollRow {
   fullName: string;
   totalHours: number;
   totalShifts: number;
-  totalOtHours: number;
   baseWage: number;
   allowance: number;
   fines: number;
@@ -40,8 +39,6 @@ export function computePayrollForEmployee(
   const totalShifts = attendanceRows.filter(
     (a) => a.status === "on_time" || a.status === "late",
   ).length;
-  const totalOtHours = attendanceRows.reduce((sum, a) => sum + Number(a.ot_hours ?? 0), 0);
-
   const baseWage = totalHours * profile.hourly_wage;
 
   const allowance =
@@ -63,7 +60,6 @@ export function computePayrollForEmployee(
     fullName: profile.full_name,
     totalHours: Math.round(totalHours * 100) / 100,
     totalShifts,
-    totalOtHours,
     baseWage: Math.round(baseWage),
     allowance: Math.round(allowance),
     fines: Math.round(fines),
@@ -77,7 +73,6 @@ export function toCsv(rows: PayrollRow[]): string {
     "Họ tên",
     "Tổng giờ làm",
     "Tổng số ca",
-    "Giờ OT",
     "Lương cơ bản",
     "Phụ cấp",
     "Tiền phạt",
@@ -89,7 +84,6 @@ export function toCsv(rows: PayrollRow[]): string {
       r.fullName,
       r.totalHours,
       r.totalShifts,
-      r.totalOtHours,
       r.baseWage,
       r.allowance,
       r.fines,
