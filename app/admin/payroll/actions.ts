@@ -24,19 +24,33 @@ export async function addAdjustment(
 
   const type = String(formData.get("type") ?? "fine") as AdjustmentType;
   const amount = Number(formData.get("amount") ?? 0);
+  const incidentDate = String(formData.get("incident_date") ?? "");
   const note = String(formData.get("note") ?? "").trim();
+
+  if (type !== "fine" && type !== "bonus") {
+    return { error: "Loại khoản điều chỉnh không hợp lệ.", success: false };
+  }
 
   if (!amount || amount <= 0) {
     return { error: "Vui lòng nhập số tiền hợp lệ.", success: false };
   }
 
+  if (!note) {
+    return { error: "Vui lòng nhập lý do phạt/thưởng.", success: false };
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(incidentDate) || incidentDate < periodStart || incidentDate > periodEnd) {
+    return { error: "Ngày phát sinh phải nằm trong khoảng thời gian đang chọn.", success: false };
+  }
+
   const { error } = await supabase.from("payroll_adjustments").insert({
     employee_id: employeeId,
+    incident_date: incidentDate,
     period_start: periodStart,
     period_end: periodEnd,
     type,
     amount,
-    note: note || null,
+    note,
     created_by: user.id,
   });
 

@@ -155,12 +155,24 @@ function AdjustmentDialog({
             </Select>
           </div>
           <div className="flex flex-col gap-2">
+            <Label htmlFor="incident_date">Ngày phát sinh</Label>
+            <Input
+              id="incident_date"
+              name="incident_date"
+              type="date"
+              min={periodStart}
+              max={periodEnd}
+              defaultValue={periodStart}
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-2">
             <Label htmlFor="amount">Số tiền (VNĐ)</Label>
             <Input id="amount" name="amount" type="number" min={0} required />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="note">Ghi chú</Label>
-            <Input id="note" name="note" />
+            <Label htmlFor="note">Lý do / nội dung</Label>
+            <Input id="note" name="note" placeholder="Ví dụ: Làm vỡ cốc" required />
           </div>
           {state.error && <p className="text-sm text-destructive">{state.error}</p>}
           <DialogFooter>

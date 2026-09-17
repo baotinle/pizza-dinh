@@ -60,8 +60,8 @@ export default async function AttendancePage({
   let adjustmentsQuery = supabase
     .from("payroll_adjustments")
     .select("*")
-    .gte("period_start", from)
-    .lte("period_end", to);
+    .gte("incident_date", from)
+    .lte("incident_date", to);
 
   if (employeeFilter !== "all") {
     adjustmentsQuery = adjustmentsQuery.eq("employee_id", employeeFilter);

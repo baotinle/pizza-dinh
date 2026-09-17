@@ -89,6 +89,7 @@ export interface Attendance {
 export interface PayrollAdjustment {
   id: string;
   employee_id: string;
+  incident_date: string;
   period_start: string;
   period_end: string;
   type: AdjustmentType;

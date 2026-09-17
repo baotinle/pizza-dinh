@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ATTENDANCE_STATUS_LABELS, ATTENDANCE_STATUS_BADGE_CLASS, type Attendance, type PayrollAdjustment } from "@/lib/types/domain";
 import { TimesheetFilterForm } from "./timesheet-filter-form";
+import { AdjustmentDetailsDialog } from "./adjustment-details-dialog";
 
 // Pay period runs the 6th of one month through the 5th of the next, per the shop's payroll cycle.
 function currentPayPeriodRange() {
@@ -41,8 +42,9 @@ export default async function TimesheetPage({
       .from("payroll_adjustments")
       .select("*")
       .eq("employee_id", profile.id)
-      .gte("period_start", from)
-      .lte("period_end", to),
+      .gte("incident_date", from)
+      .lte("incident_date", to)
+      .order("incident_date", { ascending: false }),
   ]);
 
   const rows = (attendanceData ?? []) as Attendance[];
@@ -88,6 +90,9 @@ export default async function TimesheetPage({
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
             {summary.fines.toLocaleString("vi-VN")} đ
+          </CardContent>
+          <CardContent className="pt-0">
+            <AdjustmentDetailsDialog adjustments={adjustments} />
           </CardContent>
         </Card>
         <Card>

@@ -51,8 +51,8 @@ export default async function PayrollPage({
           .from("payroll_adjustments")
           .select("*")
           .in("employee_id", employeeIds)
-          .gte("period_start", from)
-          .lte("period_end", to),
+          .gte("incident_date", from)
+          .lte("incident_date", to),
       ])
     : [{ data: [] }, { data: [] }];
 
