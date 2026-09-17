@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, CalendarDays, Clock, Megaphone } from "lucide-react";
+import { LayoutDashboard, Users, CalendarDays, Clock, Banknote, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/admin/employees", label: "Nhân sự & Lương", icon: Users },
   { href: "/admin/schedules", label: "Lịch làm việc", icon: CalendarDays },
   { href: "/admin/attendance", label: "Chấm công & Quản lý Ca", icon: Clock },
+  { href: "/admin/payroll", label: "Bảng lương", icon: Banknote },
   { href: "/admin/announcements", label: "Bảng tin Thông báo", icon: Megaphone },
 ];
 
