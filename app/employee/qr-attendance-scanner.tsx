@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BrowserQRCodeReader } from "@zxing/browser";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,53 +27,69 @@ export function QrAttendanceScanner({
   onClose: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const readerRef = useRef<BrowserQRCodeReader | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const controlsRef = useRef<{ stop: () => void } | null>(null);
   const [scannerError, setScannerError] = useState<string | null>(null);
+  const [cameraStarted, setCameraStarted] = useState(false);
 
-  useEffect(() => {
-    if (!open || !videoRef.current) return;
-
-    const reader = new BrowserQRCodeReader();
+  const startCamera = useCallback(async () => {
     const video = videoRef.current;
-    let stream: MediaStream | null = null;
-    let controls: { stop: () => void } | undefined;
-    let scanned = false;
+    if (!video || streamRef.current) return;
 
-    navigator.mediaDevices
-      .getUserMedia({
+    setScannerError(null);
+    try {
+      const cameraStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: { facingMode: { ideal: "environment" } },
-      })
-      .then(async (cameraStream) => {
-        stream = cameraStream;
-        video.srcObject = cameraStream;
-        await video.play();
-
-        controls = await reader.decodeFromStream(cameraStream, video, (result, error) => {
-          if (result && !scanned) {
-            scanned = true;
-            const scannedValue = result.getText();
-            try {
-              const url = new URL(scannedValue);
-              onScan(url.searchParams.get("token") ?? scannedValue);
-            } catch {
-              onScan(scannedValue);
-            }
-          }
-          if (error && error.name !== "NotFoundException") {
-            setScannerError("Không thể đọc camera. Vui lòng thử lại.");
-          }
-        });
-      })
-      .catch(() => {
-        setScannerError("Không thể mở camera. Hãy cấp quyền camera cho trình duyệt.");
       });
+      streamRef.current = cameraStream;
+      video.srcObject = cameraStream;
+      video.setAttribute("playsinline", "true");
+      await video.play();
+
+      const reader = new BrowserQRCodeReader();
+      readerRef.current = reader;
+      let scanned = false;
+      controlsRef.current = await reader.decodeFromStream(cameraStream, video, (result, error) => {
+        if (result && !scanned) {
+          scanned = true;
+          const scannedValue = result.getText();
+          try {
+            const url = new URL(scannedValue);
+            onScan(url.searchParams.get("token") ?? scannedValue);
+          } catch {
+            onScan(scannedValue);
+          }
+        }
+        if (error && error.name !== "NotFoundException") {
+          setScannerError("Không thể đọc mã QR. Hãy đưa mã vào giữa khung hình.");
+        }
+      });
+      setCameraStarted(true);
+    } catch (cameraError) {
+      const name = cameraError instanceof DOMException ? cameraError.name : "";
+      setScannerError(
+        name === "NotAllowedError"
+          ? "Camera đang bị chặn. Hãy bật quyền Camera cho trình duyệt rồi bấm Bật camera."
+          : "Không thể mở camera trên thiết bị này. Hãy bấm Bật camera để thử lại.",
+      );
+    }
+  }, [onScan]);
+
+  useEffect(() => {
+    if (!open) return;
+    const video = videoRef.current;
 
     return () => {
-      controls?.stop();
-      stream?.getTracks().forEach((track) => track.stop());
-      video.srcObject = null;
+      controlsRef.current?.stop();
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      if (video) video.srcObject = null;
+      controlsRef.current = null;
+      streamRef.current = null;
+      readerRef.current = null;
     };
-  }, [open, onScan]);
+  }, [open]);
 
   const title = operation === "check-in" ? "Quét QR Check-in" : "Quét QR Check-out";
 
@@ -91,6 +107,11 @@ export function QrAttendanceScanner({
             playsInline
             className="aspect-video w-full rounded-md bg-black object-cover"
           />
+          {!cameraStarted && (
+            <Button type="button" onClick={() => void startCamera()}>
+              Bật camera
+            </Button>
+          )}
           <p className="text-sm text-muted-foreground">
             Đưa mã QR {operation === "check-in" ? "Check-in" : "Check-out"} tại cửa hàng vào khung hình.
           </p>
