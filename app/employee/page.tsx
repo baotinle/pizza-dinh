@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/auth";
-import { formatDateVn } from "@/lib/date";
+import { formatDateVn, formatDateTimeVn } from "@/lib/date";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Announcement, Attendance, SchedulePosting } from "@/lib/types/domain";
@@ -15,7 +15,7 @@ export default async function EmployeeDashboardPage() {
   const profile = await requireProfile();
   const supabase = await createClient();
 
-  const [{ data: schedule }, { data: announcementsData }, { data: todayAttendance }] =
+  const [{ data: schedule }, { data: announcementsData }, { data: todayAttendanceData }] =
     await Promise.all([
       supabase
         .from("schedule_postings")
@@ -33,12 +33,12 @@ export default async function EmployeeDashboardPage() {
         .select("*")
         .eq("employee_id", profile.id)
         .eq("work_date", todayIso())
-        .maybeSingle(),
+        .order("created_at", { ascending: true }),
     ]);
 
   const latestSchedule = schedule as SchedulePosting | null;
   const announcements = (announcementsData ?? []) as Announcement[];
-  const today = todayAttendance as Attendance | null;
+  const todayShifts = (todayAttendanceData ?? []) as Attendance[];
 
   const scheduleUrl = latestSchedule
     ? supabase.storage.from("schedules").getPublicUrl(latestSchedule.image_path).data.publicUrl
@@ -46,10 +46,7 @@ export default async function EmployeeDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <CheckInOutCard
-        checkInTime={today?.check_in_time ?? null}
-        checkOutTime={today?.check_out_time ?? null}
-      />
+      <CheckInOutCard shifts={todayShifts} />
 
       <Card>
         <CardHeader>
@@ -87,7 +84,7 @@ export default async function EmployeeDashboardPage() {
                   {a.priority === "urgent" ? "Khẩn cấp" : "Thường"}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(a.created_at).toLocaleString("vi-VN")}
+                  {formatDateTimeVn(a.created_at)}
                 </span>
               </div>
               <p className="whitespace-pre-wrap text-sm">{a.content}</p>

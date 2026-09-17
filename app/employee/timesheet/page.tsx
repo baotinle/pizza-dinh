@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/auth";
 import { computePayrollForEmployee, hoursBetween } from "@/lib/payroll";
-import { formatDateVn } from "@/lib/date";
+import { formatDateVn, formatTimeVn } from "@/lib/date";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -115,10 +115,10 @@ export default async function TimesheetPage() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {row.check_in_time ? new Date(row.check_in_time).toLocaleTimeString("vi-VN") : "-"}
+                  {row.check_in_time ? formatTimeVn(row.check_in_time) : "-"}
                 </TableCell>
                 <TableCell>
-                  {row.check_out_time ? new Date(row.check_out_time).toLocaleTimeString("vi-VN") : "-"}
+                  {row.check_out_time ? formatTimeVn(row.check_out_time) : "-"}
                 </TableCell>
                 <TableCell>{row.ot_hours}</TableCell>
                 <TableCell>{row.note ?? "-"}</TableCell>

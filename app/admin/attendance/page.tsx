@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { hoursBetween } from "@/lib/payroll";
-import { formatDateVn } from "@/lib/date";
+import { formatDateVn, formatTimeVn } from "@/lib/date";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ATTENDANCE_STATUS_LABELS, type Attendance, type Profile } from "@/lib/types/domain";
@@ -117,14 +117,10 @@ export default async function AttendancePage({
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {row.check_in_time
-                    ? new Date(row.check_in_time).toTimeString().slice(0, 5)
-                    : "-"}
+                  {row.check_in_time ? formatTimeVn(row.check_in_time) : "-"}
                 </TableCell>
                 <TableCell>
-                  {row.check_out_time
-                    ? new Date(row.check_out_time).toTimeString().slice(0, 5)
-                    : "-"}
+                  {row.check_out_time ? formatTimeVn(row.check_out_time) : "-"}
                 </TableCell>
                 <TableCell>{row.ot_hours}</TableCell>
                 <TableCell className="max-w-40 truncate">{row.note ?? "-"}</TableCell>

@@ -9,9 +9,10 @@ export interface AttendanceFormState {
   success: boolean;
 }
 
+// Vietnam has no DST, so a fixed +07:00 offset always converts correctly regardless of server timezone.
 function toTimestamp(date: string, time: string): string | null {
   if (!time) return null;
-  return new Date(`${date}T${time}:00`).toISOString();
+  return new Date(`${date}T${time}:00+07:00`).toISOString();
 }
 
 export async function upsertAttendance(
@@ -24,6 +25,7 @@ export async function upsertAttendance(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Chưa đăng nhập.", success: false };
 
+  const id = String(formData.get("id") ?? "").trim();
   const employeeId = String(formData.get("employee_id") ?? "");
   const workDate = String(formData.get("work_date") ?? "");
   const status = String(formData.get("status") ?? "on_time") as AttendanceStatus;
@@ -36,19 +38,21 @@ export async function upsertAttendance(
     return { error: "Vui lòng chọn nhân viên và ngày làm việc.", success: false };
   }
 
-  const { error } = await supabase.from("attendance").upsert(
-    {
-      employee_id: employeeId,
-      work_date: workDate,
-      status,
-      check_in_time: toTimestamp(workDate, checkInTime),
-      check_out_time: toTimestamp(workDate, checkOutTime),
-      ot_hours: otHours,
-      note: note || null,
-      recorded_by: user.id,
-    },
-    { onConflict: "employee_id,work_date" },
-  );
+  const payload = {
+    employee_id: employeeId,
+    work_date: workDate,
+    status,
+    check_in_time: toTimestamp(workDate, checkInTime),
+    check_out_time: toTimestamp(workDate, checkOutTime),
+    ot_hours: otHours,
+    note: note || null,
+    recorded_by: user.id,
+  };
+
+  // A day can have multiple shifts, so editing updates one row by id; adding always inserts a new row.
+  const { error } = id
+    ? await supabase.from("attendance").update(payload).eq("id", id)
+    : await supabase.from("attendance").insert(payload);
 
   if (error) return { error: error.message, success: false };
 

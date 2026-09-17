@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import type { Announcement } from "@/lib/types/domain";
+import { formatDateTimeVn } from "@/lib/date";
 import { AnnouncementForm } from "./announcement-form";
 
 export default async function AnnouncementsPage() {
@@ -31,7 +32,7 @@ export default async function AnnouncementsPage() {
                 {a.priority === "urgent" ? "Khẩn cấp" : "Thường"}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                {new Date(a.created_at).toLocaleString("vi-VN")}
+                {formatDateTimeVn(a.created_at)}
               </span>
             </div>
             <p className="whitespace-pre-wrap text-sm">{a.content}</p>

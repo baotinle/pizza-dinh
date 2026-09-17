@@ -60,6 +60,7 @@ export function AttendanceRecordDialog({
           <DialogTitle>{record ? "Sửa chấm công" : "Thêm bản ghi chấm công"}</DialogTitle>
         </DialogHeader>
         <form action={formAction} className="grid grid-cols-2 gap-4">
+          <input type="hidden" name="id" value={record?.id ?? ""} />
           <div className="col-span-2 flex flex-col gap-2">
             <Label htmlFor="employee_id">Nhân viên</Label>
             <Select name="employee_id" defaultValue={record?.employee_id} required>
