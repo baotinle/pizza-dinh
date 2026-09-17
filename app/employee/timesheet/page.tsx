@@ -5,7 +5,7 @@ import { formatDateVn, formatTimeVn } from "@/lib/date";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ATTENDANCE_STATUS_LABELS, type Attendance, type PayrollAdjustment } from "@/lib/types/domain";
+import { ATTENDANCE_STATUS_LABELS, ATTENDANCE_STATUS_BADGE_CLASS, type Attendance, type PayrollAdjustment } from "@/lib/types/domain";
 
 function currentMonthRange() {
   const today = new Date();
@@ -13,13 +13,6 @@ function currentMonthRange() {
   const to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
   return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) };
 }
-
-const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
-  on_time: "default",
-  late: "secondary",
-  absent: "destructive",
-  leave: "secondary",
-};
 
 export default async function TimesheetPage() {
   const profile = await requireProfile();
@@ -110,7 +103,7 @@ export default async function TimesheetPage() {
               <TableRow key={row.id}>
                 <TableCell>{formatDateVn(row.work_date)}</TableCell>
                 <TableCell>
-                  <Badge variant={STATUS_VARIANT[row.status]}>
+                  <Badge className={ATTENDANCE_STATUS_BADGE_CLASS[row.status]}>
                     {ATTENDANCE_STATUS_LABELS[row.status]}
                   </Badge>
                 </TableCell>

@@ -29,6 +29,13 @@ export const ATTENDANCE_STATUS_LABELS: Record<AttendanceStatus, string> = {
   leave: "Nghỉ phép",
 };
 
+export const ATTENDANCE_STATUS_BADGE_CLASS: Record<AttendanceStatus, string> = {
+  on_time: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400",
+  late: "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400",
+  absent: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400",
+  leave: "bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400",
+};
+
 // Auto-suggest allowance type + default rate based on job position.
 export function suggestAllowance(position: PositionType): {
   allowanceType: AllowanceType;

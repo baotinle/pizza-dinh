@@ -3,7 +3,7 @@ import { hoursBetween } from "@/lib/payroll";
 import { formatDateVn, formatTimeVn } from "@/lib/date";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ATTENDANCE_STATUS_LABELS, type Attendance, type Profile } from "@/lib/types/domain";
+import { ATTENDANCE_STATUS_LABELS, ATTENDANCE_STATUS_BADGE_CLASS, type Attendance, type Profile } from "@/lib/types/domain";
 import { AttendanceFilterForm } from "./attendance-filter-form";
 import { AttendanceRecordDialog } from "./attendance-record-dialog";
 import { StatCard } from "./stat-card";
@@ -16,13 +16,6 @@ function defaultRange() {
     to: today.toISOString().slice(0, 10),
   };
 }
-
-const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
-  on_time: "default",
-  late: "secondary",
-  absent: "destructive",
-  leave: "secondary",
-};
 
 export default async function AttendancePage({
   searchParams,
@@ -112,7 +105,7 @@ export default async function AttendancePage({
                 <TableCell>{formatDateVn(row.work_date)}</TableCell>
                 <TableCell>{employeeMap.get(row.employee_id) ?? "-"}</TableCell>
                 <TableCell>
-                  <Badge variant={STATUS_VARIANT[row.status]}>
+                  <Badge className={ATTENDANCE_STATUS_BADGE_CLASS[row.status]}>
                     {ATTENDANCE_STATUS_LABELS[row.status]}
                   </Badge>
                 </TableCell>

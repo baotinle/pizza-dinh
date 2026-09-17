@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,8 +16,9 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
       <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Pizza Đình</CardTitle>
+        <CardHeader className="items-center text-center">
+          <Image src="/logo.png" alt="Pizza Đình" width={72} height={72} priority className="size-18" />
+          <CardTitle className="text-xl">Pizza Đình</CardTitle>
           <CardDescription>Đăng nhập vào hệ thống quản lý nội bộ</CardDescription>
         </CardHeader>
         <CardContent>
