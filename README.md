@@ -1,5 +1,51 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Pizza Đình — Internal Ops App
+
+Nội bộ quản lý nhân sự, lịch làm việc, chấm công, lương và thông báo cho cửa hàng Pizza Đình.
+
+### 1. Tạo project Supabase
+
+1. Tạo project mới tại [supabase.com](https://supabase.com).
+2. Vào **SQL Editor**, chạy toàn bộ nội dung file [supabase/migrations/0001_init.sql](supabase/migrations/0001_init.sql). Lệnh này tạo bảng, RLS policy, và bucket Storage `schedules`.
+3. Vào **Project Settings → API**, lấy `Project URL`, `anon public key`, `service_role key`.
+
+### 2. Cấu hình biến môi trường
+
+Sao chép `.env.local.example` thành `.env.local` và điền giá trị lấy ở bước trên:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+```
+
+`SUPABASE_SERVICE_ROLE_KEY` chỉ được dùng ở server (server actions), không bao giờ lộ ra client.
+
+### 3. Tạo tài khoản Admin đầu tiên
+
+Vì đăng ký nhân viên chỉ do Admin thực hiện trong app, tài khoản Admin đầu tiên cần tạo thủ công:
+
+1. Vào **Authentication → Users** trên Supabase Dashboard, bấm "Add user", nhập email + mật khẩu, tick "Auto confirm user".
+2. Vào **SQL Editor**, chạy (thay `<user-id>` bằng UUID vừa tạo):
+
+```sql
+insert into profiles (id, full_name, email, role, hourly_wage, allowance_type, allowance_rate)
+values ('<user-id>', 'Chủ cửa hàng', '<email-đã-tạo>', 'admin', 0, 'fixed_monthly', 0);
+```
+
+### 4. Chạy dự án
+
+```bash
+npm run dev
+```
+
+Mở [http://localhost:3000](http://localhost:3000), đăng nhập bằng tài khoản Admin vừa tạo.
+
+### 5. Deploy lên Vercel
+
+Import repo vào Vercel, khai báo 3 biến môi trường ở trên trong Project Settings → Environment Variables, rồi deploy.
+
 ## Getting Started
 
 First, run the development server:
@@ -34,3 +80,4 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
