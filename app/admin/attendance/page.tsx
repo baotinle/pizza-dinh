@@ -13,6 +13,8 @@ import {
 import { AttendanceFilterForm } from "./attendance-filter-form";
 import { AttendanceRecordDialog } from "./attendance-record-dialog";
 import { StatCard } from "./stat-card";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 function defaultRange() {
   const today = new Date();
@@ -89,7 +91,10 @@ export default async function AttendancePage({
             Theo dõi và điểm danh chi tiết cho từng nhân viên.
           </p>
         </div>
-        <AttendanceRecordDialog employees={employees} triggerLabel="+ Thêm bản ghi" />
+        <div className="flex gap-2">
+          <Button variant="outline" render={<Link href="/admin/attendance/qr-codes" />}>Mã QR chấm công</Button>
+          <AttendanceRecordDialog employees={employees} triggerLabel="+ Thêm bản ghi" />
+        </div>
       </div>
 
       <AttendanceFilterForm
