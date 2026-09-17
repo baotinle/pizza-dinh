@@ -33,17 +33,24 @@ export function QrAttendanceScanner({
     if (!open || !videoRef.current) return;
 
     const reader = new BrowserQRCodeReader();
+    const video = videoRef.current;
     let controls: { stop: () => void } | undefined;
     let scanned = false;
 
     reader
       .decodeFromConstraints(
-        { video: { facingMode: { ideal: "environment" } } },
-        videoRef.current,
+        { audio: false, video: { facingMode: { ideal: "environment" } } },
+        video,
         (result, error) => {
           if (result && !scanned) {
             scanned = true;
-            onScan(result.getText());
+            const scannedValue = result.getText();
+            try {
+              const url = new URL(scannedValue);
+              onScan(url.searchParams.get("token") ?? scannedValue);
+            } catch {
+              onScan(scannedValue);
+            }
           }
           if (error && error.name !== "NotFoundException") {
             setScannerError("Không thể đọc camera. Vui lòng thử lại.");
@@ -52,6 +59,13 @@ export function QrAttendanceScanner({
       )
       .then((nextControls) => {
         controls = nextControls;
+        video.play().catch(() => {
+          setScannerError("Không thể phát camera. Hãy cho phép camera rồi thử lại.");
+        });
+        const stream = video.srcObject as MediaStream | null;
+        if (!stream || stream.getVideoTracks().length === 0) {
+          setScannerError("Không tìm thấy camera trên thiết bị này.");
+        }
       })
       .catch(() => {
         setScannerError("Không thể mở camera. Hãy cấp quyền camera cho trình duyệt.");
@@ -69,7 +83,13 @@ export function QrAttendanceScanner({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-3">
-          <video ref={videoRef} className="aspect-video w-full rounded-md bg-black object-cover" muted playsInline />
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            className="aspect-video w-full rounded-md bg-black object-cover"
+          />
           <p className="text-sm text-muted-foreground">
             Đưa mã QR {operation === "check-in" ? "Check-in" : "Check-out"} tại cửa hàng vào khung hình.
           </p>

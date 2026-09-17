@@ -1,13 +1,13 @@
 import QRCode from "qrcode";
 import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
-import { getAttendanceQrToken } from "@/lib/attendance-qr";
+import { getAttendanceQrPayload } from "@/lib/attendance-qr";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-async function createQrDataUrl(token: string | undefined) {
-  if (!token) return null;
-  return QRCode.toDataURL(token, { width: 360, margin: 2 });
+async function createQrDataUrl(payload: string | null) {
+  if (!payload) return null;
+  return QRCode.toDataURL(payload, { width: 360, margin: 2 });
 }
 
 export default async function AttendanceQrCodesPage() {
@@ -15,8 +15,8 @@ export default async function AttendanceQrCodesPage() {
   if (profile.role !== "admin") redirect("/employee");
 
   const [checkInQr, checkOutQr] = await Promise.all([
-    createQrDataUrl(getAttendanceQrToken("check-in")),
-    createQrDataUrl(getAttendanceQrToken("check-out")),
+    createQrDataUrl(getAttendanceQrPayload("check-in")),
+    createQrDataUrl(getAttendanceQrPayload("check-out")),
   ]);
 
   return (
