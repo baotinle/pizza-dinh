@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { POSITION_LABELS, type Profile } from "@/lib/types/domain";
 import { EmployeeFormDialog } from "./employee-form-dialog";
 import { EmployeeActiveToggle } from "./employee-active-toggle";
+import { EmployeeDeleteButton } from "./employee-delete-button";
 
 export default async function EmployeesPage() {
   const supabase = await createClient();
@@ -61,6 +62,7 @@ export default async function EmployeesPage() {
                 <TableCell className="flex justify-end gap-2">
                   <EmployeeFormDialog employee={employee} />
                   <EmployeeActiveToggle employeeId={employee.id} isActive={employee.is_active} />
+                  <EmployeeDeleteButton employeeId={employee.id} employeeName={employee.full_name} />
                 </TableCell>
               </TableRow>
             ))}

@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { hoursBetween } from "@/lib/payroll";
-import { formatDateVn, formatTimeVn } from "@/lib/date";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { formatDateVn, formatTimeVn, todayIsoVn, toIsoDate } from "@/lib/date";
 import { ATTENDANCE_STATUS_LABELS, ATTENDANCE_STATUS_BADGE_CLASS, type Attendance, type Profile } from "@/lib/types/domain";
 import { AttendanceFilterForm } from "./attendance-filter-form";
 import { AttendanceRecordDialog } from "./attendance-record-dialog";
@@ -12,8 +12,8 @@ function defaultRange() {
   const today = new Date();
   const from = new Date(today.getFullYear(), today.getMonth(), 1);
   return {
-    from: from.toISOString().slice(0, 10),
-    to: today.toISOString().slice(0, 10),
+    from: toIsoDate(from),
+    to: todayIsoVn(),
   };
 }
 

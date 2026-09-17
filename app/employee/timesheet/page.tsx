@@ -1,23 +1,33 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/auth";
 import { computePayrollForEmployee, hoursBetween } from "@/lib/payroll";
-import { formatDateVn, formatTimeVn } from "@/lib/date";
+import { formatDateVn, formatTimeVn, toIsoDate } from "@/lib/date";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ATTENDANCE_STATUS_LABELS, ATTENDANCE_STATUS_BADGE_CLASS, type Attendance, type PayrollAdjustment } from "@/lib/types/domain";
+import { TimesheetFilterForm } from "./timesheet-filter-form";
 
-function currentMonthRange() {
+// Pay period runs the 6th of one month through the 5th of the next, per the shop's payroll cycle.
+function currentPayPeriodRange() {
   const today = new Date();
-  const from = new Date(today.getFullYear(), today.getMonth(), 1);
-  const to = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) };
+  const periodStartMonth = today.getDate() >= 6 ? today.getMonth() : today.getMonth() - 1;
+  const from = new Date(today.getFullYear(), periodStartMonth, 6);
+  const to = new Date(today.getFullYear(), periodStartMonth + 1, 5);
+  return { from: toIsoDate(from), to: toIsoDate(to) };
 }
 
-export default async function TimesheetPage() {
+export default async function TimesheetPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; to?: string }>;
+}) {
   const profile = await requireProfile();
   const supabase = await createClient();
-  const { from, to } = currentMonthRange();
+  const params = await searchParams;
+  const defaults = currentPayPeriodRange();
+  const from = params.from || defaults.from;
+  const to = params.to || defaults.to;
 
   const [{ data: attendanceData }, { data: adjustmentsData }] = await Promise.all([
     supabase
@@ -51,9 +61,11 @@ export default async function TimesheetPage() {
       <div>
         <h1 className="text-2xl font-semibold">Bảng công của tôi</h1>
         <p className="text-sm text-muted-foreground">
-          Tháng {new Date(from).getMonth() + 1}/{new Date(from).getFullYear()}
+          Kỳ lương từ {formatDateVn(from)} đến {formatDateVn(to)}
         </p>
       </div>
+
+      <TimesheetFilterForm defaultFrom={from} defaultTo={to} />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>

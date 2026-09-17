@@ -1,15 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/auth";
-import { formatDateVn, formatDateTimeVn } from "@/lib/date";
+import { formatDateVn, formatDateTimeVn, todayIsoVn } from "@/lib/date";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Announcement, Attendance, SchedulePosting } from "@/lib/types/domain";
 import { CheckInOutCard } from "./check-in-out-card";
 import { ScheduleImageZoom } from "./schedule-image-zoom";
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export default async function EmployeeDashboardPage() {
   const profile = await requireProfile();
@@ -32,7 +28,7 @@ export default async function EmployeeDashboardPage() {
         .from("attendance")
         .select("*")
         .eq("employee_id", profile.id)
-        .eq("work_date", todayIso())
+        .eq("work_date", todayIsoVn())
         .order("created_at", { ascending: true }),
     ]);
 

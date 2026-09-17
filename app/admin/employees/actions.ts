@@ -131,3 +131,18 @@ export async function setEmployeeActive(employeeId: string, isActive: boolean) {
   await supabase.from("profiles").update({ is_active: isActive }).eq("id", employeeId);
   revalidatePath("/admin/employees");
 }
+
+// Deleting the auth user cascades to profiles, attendance, and payroll_adjustments (FK on delete cascade).
+export async function deleteEmployee(employeeId: string): Promise<EmployeeFormState> {
+  try {
+    await assertAdmin();
+    const adminClient = createAdminClient();
+    const { error } = await adminClient.auth.admin.deleteUser(employeeId);
+    if (error) return { error: error.message, success: false };
+
+    revalidatePath("/admin/employees");
+    return { error: null, success: true };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Đã xảy ra lỗi.", success: false };
+  }
+}

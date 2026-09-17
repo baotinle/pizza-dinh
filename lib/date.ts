@@ -18,3 +18,16 @@ export function formatTimeVn(iso: string): string {
 export function formatDateTimeVn(iso: string): string {
   return new Date(iso).toLocaleString("vi-VN", { timeZone: VN_TZ });
 }
+
+// Formats a Date's own calendar components (no UTC conversion) — safe for dates built from y/m/d.
+export function toIsoDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+// Today's calendar date in Vietnam, regardless of the server process's own timezone (e.g. UTC on Vercel).
+export function todayIsoVn(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: VN_TZ }).format(new Date());
+}

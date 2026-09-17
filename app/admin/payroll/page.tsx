@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { computePayrollForEmployee } from "@/lib/payroll";
+import { todayIsoVn, toIsoDate } from "@/lib/date";
 import type { Attendance, PayrollAdjustment, Profile } from "@/lib/types/domain";
 import { PayrollFilterForm } from "./payroll-filter-form";
 import { PayrollTable } from "./payroll-table";
@@ -8,8 +9,8 @@ function defaultRange() {
   const today = new Date();
   const from = new Date(today.getFullYear(), today.getMonth(), 1);
   return {
-    from: from.toISOString().slice(0, 10),
-    to: today.toISOString().slice(0, 10),
+    from: toIsoDate(from),
+    to: todayIsoVn(),
   };
 }
 

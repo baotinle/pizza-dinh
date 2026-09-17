@@ -2,10 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+import { todayIsoVn } from "@/lib/date";
 
 async function findOpenShift(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -32,7 +29,7 @@ export async function checkIn() {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Chưa đăng nhập.");
 
-  const workDate = todayIso();
+  const workDate = todayIsoVn();
 
   // Prevent a second check-in while a shift is still open (not yet checked out).
   const openShift = await findOpenShift(supabase, user.id, workDate);
@@ -55,7 +52,7 @@ export async function checkOut() {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Chưa đăng nhập.");
 
-  const workDate = todayIso();
+  const workDate = todayIsoVn();
 
   const openShift = await findOpenShift(supabase, user.id, workDate);
   if (!openShift) return;
