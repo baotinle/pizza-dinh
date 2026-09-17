@@ -34,14 +34,21 @@ export function QrAttendanceScanner({
 
     const reader = new BrowserQRCodeReader();
     const video = videoRef.current;
+    let stream: MediaStream | null = null;
     let controls: { stop: () => void } | undefined;
     let scanned = false;
 
-    reader
-      .decodeFromConstraints(
-        { audio: false, video: { facingMode: { ideal: "environment" } } },
-        video,
-        (result, error) => {
+    navigator.mediaDevices
+      .getUserMedia({
+        audio: false,
+        video: { facingMode: { ideal: "environment" } },
+      })
+      .then(async (cameraStream) => {
+        stream = cameraStream;
+        video.srcObject = cameraStream;
+        await video.play();
+
+        controls = await reader.decodeFromStream(cameraStream, video, (result, error) => {
           if (result && !scanned) {
             scanned = true;
             const scannedValue = result.getText();
@@ -55,23 +62,17 @@ export function QrAttendanceScanner({
           if (error && error.name !== "NotFoundException") {
             setScannerError("Không thể đọc camera. Vui lòng thử lại.");
           }
-        },
-      )
-      .then((nextControls) => {
-        controls = nextControls;
-        video.play().catch(() => {
-          setScannerError("Không thể phát camera. Hãy cho phép camera rồi thử lại.");
         });
-        const stream = video.srcObject as MediaStream | null;
-        if (!stream || stream.getVideoTracks().length === 0) {
-          setScannerError("Không tìm thấy camera trên thiết bị này.");
-        }
       })
       .catch(() => {
         setScannerError("Không thể mở camera. Hãy cấp quyền camera cho trình duyệt.");
       });
 
-    return () => controls?.stop();
+    return () => {
+      controls?.stop();
+      stream?.getTracks().forEach((track) => track.stop());
+      video.srcObject = null;
+    };
   }, [open, onScan]);
 
   const title = operation === "check-in" ? "Quét QR Check-in" : "Quét QR Check-out";
