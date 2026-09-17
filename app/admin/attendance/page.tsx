@@ -57,14 +57,19 @@ export default async function AttendancePage({
     query = query.in("employee_id", employees.map((e) => e.id));
   }
 
-  const [{ data }, { data: adjustmentsData }] = await Promise.all([
-    query,
-    supabase
-      .from("payroll_adjustments")
-      .select("*")
-      .gte("period_start", from)
-      .lte("period_end", to),
-  ]);
+  let adjustmentsQuery = supabase
+    .from("payroll_adjustments")
+    .select("*")
+    .gte("period_start", from)
+    .lte("period_end", to);
+
+  if (employeeFilter !== "all") {
+    adjustmentsQuery = adjustmentsQuery.eq("employee_id", employeeFilter);
+  } else if (employees.length > 0) {
+    adjustmentsQuery = adjustmentsQuery.in("employee_id", employees.map((e) => e.id));
+  }
+
+  const [{ data }, { data: adjustmentsData }] = await Promise.all([query, adjustmentsQuery]);
   const rows = (data ?? []) as Attendance[];
   const adjustments = (adjustmentsData ?? []) as PayrollAdjustment[];
 
