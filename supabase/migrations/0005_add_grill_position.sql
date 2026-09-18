@@ -1,0 +1,1 @@
+alter type position_type add value if not exists 'bep_nuong';

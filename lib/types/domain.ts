@@ -1,6 +1,6 @@
 export type UserRole = "admin" | "employee";
 
-export type PositionType = "bep_chinh" | "bep_phu" | "phuc_vu" | "thu_ngan";
+export type PositionType = "bep_chinh" | "bep_phu" | "bep_nuong" | "phuc_vu" | "thu_ngan";
 
 export type AllowanceType = "per_shift" | "fixed_monthly";
 
@@ -13,11 +13,12 @@ export type PriorityLevel = "normal" | "urgent";
 export const POSITION_LABELS: Record<PositionType, string> = {
   bep_chinh: "Bếp chính",
   bep_phu: "Bếp phụ",
+  bep_nuong: "Bếp nướng",
   phuc_vu: "Phục vụ",
   thu_ngan: "Thu ngân",
 };
 
-export const KITCHEN_POSITIONS: PositionType[] = ["bep_chinh", "bep_phu"];
+export const KITCHEN_POSITIONS: PositionType[] = ["bep_chinh", "bep_phu", "bep_nuong"];
 
 export const DEFAULT_PER_SHIFT_ALLOWANCE = 25000;
 export const DEFAULT_FIXED_MONTHLY_ALLOWANCE = 200000;

@@ -20,10 +20,18 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 QR_CHECK_IN_TOKEN=...
 QR_CHECK_OUT_TOKEN=...
+GOOGLE_OAUTH_CLIENT_ID=...
+GOOGLE_OAUTH_CLIENT_SECRET=...
+GOOGLE_OAUTH_REDIRECT_URI=http://localhost:3000/api/admin/google/oauth/callback
+GOOGLE_OAUTH_REFRESH_TOKEN=...
+GOOGLE_SHEETS_SPREADSHEET_ID=16JzCninkZcBQWOaVIZceq-5wO4NajA-3GOQFEoxqYu0
+GOOGLE_SHEETS_TAB=Hàng ngày
+CRON_SECRET=...
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` chỉ được dùng ở server (server actions), không bao giờ lộ ra client.
 Hai token QR cũng chỉ được lưu ở biến môi trường server. Admin mở **Chấm công & Quản lý Ca → Mã QR chấm công** để hiển thị/in hai mã cố định.
+`GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN` và `CRON_SECRET` chỉ được dùng ở server. Trong Google Cloud tạo OAuth Client ID loại **Web application**, thêm redirect URI local `http://localhost:3000/api/admin/google/oauth/callback` và redirect URI production `https://pizza-dinh.vercel.app/api/admin/google/oauth/callback`. Đăng nhập admin rồi bấm **Kết nối Google** trong dashboard để nhận refresh token một lần; thêm token đó vào biến môi trường. Cấp quyền Viewer cho tài khoản Google đã OAuth trên spreadsheet có ID `16JzCninkZcBQWOaVIZceq-5wO4NajA-3GOQFEoxqYu0`, tab `Hàng ngày`, với các cột `Ngày`, `Cuối ca (Cash)`, `Cuối ca (Bank)`, `Nav`, `Doanh thu`, `Chi phí`. Dashboard đọc trực tiếp Google Sheets REST API và không đồng bộ dữ liệu qua Supabase.
 
 Khi nhân viên bấm **Check-in** hoặc **Check-out**, trình duyệt sẽ yêu cầu quyền camera để quét đúng mã tương ứng. Camera hoạt động trên `localhost` hoặc HTTPS.
 
@@ -49,7 +57,7 @@ Mở [http://localhost:3000](http://localhost:3000), đăng nhập bằng tài k
 
 ### 5. Deploy lên Vercel
 
-Import repo vào Vercel, khai báo 3 biến môi trường ở trên trong Project Settings → Environment Variables, rồi deploy.
+Import repo vào Vercel, khai báo các biến môi trường ở trên trong Project Settings → Environment Variables, rồi deploy. `vercel.json` chạy cron lúc 02:00 UTC (09:00 giờ Việt Nam); Vercel gửi `Authorization: Bearer $CRON_SECRET` tới endpoint cron.
 
 ## Getting Started
 
