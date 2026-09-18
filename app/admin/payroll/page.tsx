@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { computePayrollForEmployee } from "@/lib/payroll";
-import { todayIsoVn, toIsoDate } from "@/lib/date";
+import { currentPayrollPeriodVn } from "@/lib/date";
 import type { Attendance, PayrollAdjustment, Profile } from "@/lib/types/domain";
 import { PayrollFilterForm } from "./payroll-filter-form";
 import { PayrollTable } from "./payroll-table";
@@ -8,12 +8,7 @@ import { StatCard } from "../attendance/stat-card";
 import { getSelectedEmployeeIds, toParamArray } from "@/lib/employee-filter";
 
 function defaultRange() {
-  const today = new Date();
-  const from = new Date(today.getFullYear(), today.getMonth(), 1);
-  return {
-    from: toIsoDate(from),
-    to: todayIsoVn(),
-  };
+  return currentPayrollPeriodVn();
 }
 
 export default async function PayrollPage({

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import type { FinanceRow } from "@/lib/google-sheets-finance";
+import { currentPayrollPeriodVn } from "@/lib/date";
 
 const currency = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
 const money = (value: number | null) => value === null ? "—" : `${currency.format(value)} đ`;
@@ -51,9 +52,12 @@ function NavChart({ rows }: { rows: FinanceRow[] }) {
 }
 
 export function FinancialDashboard() {
+  const defaultRange = currentPayrollPeriodVn();
+  const defaultFrom = defaultRange.from;
+  const defaultTo = defaultRange.to;
   const [rows, setRows] = useState<FinanceRow[]>([]);
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [from, setFrom] = useState(defaultFrom);
+  const [to, setTo] = useState(defaultTo);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const fetchRows = async (rangeFrom?: string, rangeTo?: string) => {
@@ -78,16 +82,11 @@ export function FinancialDashboard() {
       try {
         const allRows = await fetchRows();
         const latestRevenueRow = allRows.filter((row) => row.revenue !== null).at(-1);
-        const defaultFrom = latestRevenueRow ? `${latestRevenueRow.date.slice(0, 8)}01` : "";
-        const defaultTo = latestRevenueRow?.date ?? "";
-        const nextRows = latestRevenueRow ? await fetchRows(defaultFrom, defaultTo) : [];
+        const initialTo = latestRevenueRow?.date ?? defaultTo;
+        const nextRows = await fetchRows(defaultFrom, initialTo);
         if (!cancelled) {
           setRows(nextRows);
-          if (latestRevenueRow) {
-            const latestRevenueDate = latestRevenueRow.date;
-            setFrom(`${latestRevenueDate.slice(0, 8)}01`);
-            setTo(latestRevenueDate);
-          }
+          setTo(initialTo);
         }
       } catch (caught) {
         if (!cancelled) setError(caught instanceof Error ? caught.message : "Không thể tải dữ liệu.");
@@ -97,7 +96,7 @@ export function FinancialDashboard() {
     };
     void initialLoad();
     return () => { cancelled = true; };
-  }, []);
+  }, [defaultFrom, defaultTo]);
   const latest = rows.at(-1);
   const averageRevenue = useMemo(() => rows.length ? rows.reduce((sum, row) => sum + (row.revenue ?? 0), 0) / rows.length : null, [rows]);
   return <section className="flex flex-col gap-4 border-t pt-6">

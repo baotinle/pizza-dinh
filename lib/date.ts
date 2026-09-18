@@ -31,3 +31,14 @@ export function toIsoDate(date: Date): string {
 export function todayIsoVn(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: VN_TZ }).format(new Date());
 }
+
+export function currentPayrollPeriodVn(): { from: string; to: string } {
+  const [year, month] = todayIsoVn().split("-").map(Number);
+  const currentDay = Number(todayIsoVn().split("-")[2]);
+  const periodStartMonth = currentDay < 6 ? month - 2 : month - 1;
+  const periodEndMonth = currentDay < 6 ? month - 1 : month;
+  return {
+    from: toIsoDate(new Date(year, periodStartMonth, 6)),
+    to: toIsoDate(new Date(year, periodEndMonth, 5)),
+  };
+}

@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hoursBetween } from "@/lib/payroll";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { formatDateVn, formatTimeVn, todayIsoVn, toIsoDate } from "@/lib/date";
+import { currentPayrollPeriodVn, formatDateVn, formatTimeVn } from "@/lib/date";
 import {
   ATTENDANCE_STATUS_LABELS,
   ATTENDANCE_STATUS_BADGE_CLASS,
@@ -18,12 +18,7 @@ import { Button } from "@/components/ui/button";
 import { getSelectedEmployeeIds, toParamArray } from "@/lib/employee-filter";
 
 function defaultRange() {
-  const today = new Date();
-  const from = new Date(today.getFullYear(), today.getMonth(), 1);
-  return {
-    from: toIsoDate(from),
-    to: todayIsoVn(),
-  };
+  return currentPayrollPeriodVn();
 }
 
 export default async function AttendancePage({
