@@ -7,14 +7,15 @@ import {
   ATTENDANCE_STATUS_LABELS,
   ATTENDANCE_STATUS_BADGE_CLASS,
   type Attendance,
-  type PayrollAdjustment,
   type Profile,
 } from "@/lib/types/domain";
 import { AttendanceFilterForm } from "./attendance-filter-form";
 import { AttendanceRecordDialog } from "./attendance-record-dialog";
 import { StatCard } from "./stat-card";
+import { AttendanceCsvExport } from "./attendance-csv-export";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getSelectedEmployeeIds, toParamArray } from "@/lib/employee-filter";
 
 function defaultRange() {
   const today = new Date();
@@ -28,13 +29,12 @@ function defaultRange() {
 export default async function AttendancePage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string; employee?: string }>;
+  searchParams: Promise<{ from?: string; to?: string; employee?: string | string[] }>;
 }) {
   const params = await searchParams;
   const defaults = defaultRange();
   const from = params.from || defaults.from;
   const to = params.to || defaults.to;
-  const employeeFilter = params.employee || "all";
 
   const supabase = await createClient();
 
@@ -44,6 +44,7 @@ export default async function AttendancePage({
     .eq("role", "employee")
     .order("full_name");
   const employees = (employeesData ?? []) as Profile[];
+  const selectedEmployeeIds = getSelectedEmployeeIds(params.employee, employees);
   const employeeMap = new Map(employees.map((e) => [e.id, e.full_name]));
 
   let query = supabase
@@ -53,34 +54,14 @@ export default async function AttendancePage({
     .lte("work_date", to)
     .order("work_date", { ascending: false });
 
-  if (employeeFilter !== "all") {
-    query = query.eq("employee_id", employeeFilter);
-  } else {
-    query = query.in("employee_id", employees.map((e) => e.id));
-  }
+  query = query.in("employee_id", selectedEmployeeIds);
 
-  let adjustmentsQuery = supabase
-    .from("payroll_adjustments")
-    .select("*")
-    .gte("incident_date", from)
-    .lte("incident_date", to);
-
-  if (employeeFilter !== "all") {
-    adjustmentsQuery = adjustmentsQuery.eq("employee_id", employeeFilter);
-  } else if (employees.length > 0) {
-    adjustmentsQuery = adjustmentsQuery.in("employee_id", employees.map((e) => e.id));
-  }
-
-  const [{ data }, { data: adjustmentsData }] = await Promise.all([query, adjustmentsQuery]);
+  const { data } = await query;
   const rows = (data ?? []) as Attendance[];
-  const adjustments = (adjustmentsData ?? []) as PayrollAdjustment[];
 
   const totalShifts = rows.filter((r) => r.status === "on_time" || r.status === "late").length;
   const totalHours = rows.reduce((sum, r) => sum + hoursBetween(r.check_in_time, r.check_out_time), 0);
   const lateAbsentCount = rows.filter((r) => r.status === "late" || r.status === "absent").length;
-  const totalFines = adjustments
-    .filter((adjustment) => adjustment.type === "fine")
-    .reduce((sum, adjustment) => sum + Number(adjustment.amount), 0);
 
   return (
     <div className="flex flex-col gap-4">
@@ -101,14 +82,22 @@ export default async function AttendancePage({
         employees={employees}
         defaultFrom={from}
         defaultTo={to}
-        defaultEmployeeId={employeeFilter}
+        defaultEmployeeIds={toParamArray(params.employee).filter((value) => value !== "all")}
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="flex justify-end">
+        <AttendanceCsvExport
+          rows={rows}
+          employeeMap={Object.fromEntries(employeeMap)}
+          from={from}
+          to={to}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatCard label="Tổng số ca làm" value={totalShifts} />
         <StatCard label="Tổng số giờ làm" value={totalHours.toFixed(1)} />
         <StatCard label="Đi muộn / Vắng mặt" value={lateAbsentCount} />
-        <StatCard label="Tổng khoản phạt" value={`${totalFines.toLocaleString("vi-VN")} đ`} />
       </div>
 
       <div className="rounded-lg border">

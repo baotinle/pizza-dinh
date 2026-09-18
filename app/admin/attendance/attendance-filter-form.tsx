@@ -3,43 +3,25 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { Profile } from "@/lib/types/domain";
+import { EmployeeMultiSelect } from "@/components/employee-multi-select";
 
 export function AttendanceFilterForm({
   employees,
   defaultFrom,
   defaultTo,
-  defaultEmployeeId,
+  defaultEmployeeIds,
 }: {
   employees: Profile[];
   defaultFrom: string;
   defaultTo: string;
-  defaultEmployeeId: string;
+  defaultEmployeeIds: string[];
 }) {
   return (
     <form className="flex flex-wrap items-end gap-4 rounded-lg border p-4" method="get">
       <div className="flex flex-col gap-2">
         <Label htmlFor="employee">Nhân viên</Label>
-        <Select name="employee" defaultValue={defaultEmployeeId}>
-          <SelectTrigger id="employee" className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả</SelectItem>
-            {employees.map((e) => (
-              <SelectItem key={e.id} value={e.id}>
-                {e.full_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <EmployeeMultiSelect employees={employees} defaultEmployeeIds={defaultEmployeeIds} />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="from">Từ ngày</Label>

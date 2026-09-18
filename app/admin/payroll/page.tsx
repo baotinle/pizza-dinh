@@ -4,6 +4,8 @@ import { todayIsoVn, toIsoDate } from "@/lib/date";
 import type { Attendance, PayrollAdjustment, Profile } from "@/lib/types/domain";
 import { PayrollFilterForm } from "./payroll-filter-form";
 import { PayrollTable } from "./payroll-table";
+import { StatCard } from "../attendance/stat-card";
+import { getSelectedEmployeeIds, toParamArray } from "@/lib/employee-filter";
 
 function defaultRange() {
   const today = new Date();
@@ -17,13 +19,12 @@ function defaultRange() {
 export default async function PayrollPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string; employee?: string }>;
+  searchParams: Promise<{ from?: string; to?: string; employee?: string | string[] }>;
 }) {
   const params = await searchParams;
   const defaults = defaultRange();
   const from = params.from || defaults.from;
   const to = params.to || defaults.to;
-  const employeeFilter = params.employee || "all";
 
   const supabase = await createClient();
 
@@ -33,9 +34,9 @@ export default async function PayrollPage({
     .eq("role", "employee")
     .order("full_name");
   const employees = (employeesData ?? []) as Profile[];
+  const selectedEmployeeIds = getSelectedEmployeeIds(params.employee, employees);
 
-  const targetEmployees =
-    employeeFilter === "all" ? employees : employees.filter((e) => e.id === employeeFilter);
+  const targetEmployees = employees.filter((employee) => selectedEmployeeIds.includes(employee.id));
 
   const employeeIds = targetEmployees.map((e) => e.id);
 
@@ -85,8 +86,17 @@ export default async function PayrollPage({
         employees={employees}
         defaultFrom={from}
         defaultTo={to}
-        defaultEmployeeId={employeeFilter}
+        defaultEmployeeIds={toParamArray(params.employee).filter((value) => value !== "all")}
       />
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <StatCard label="Tổng giờ làm" value={payrollRows.reduce((sum, row) => sum + row.totalHours, 0).toFixed(1)} />
+        <StatCard label="Tổng số ca" value={payrollRows.reduce((sum, row) => sum + row.totalShifts, 0)} />
+        <StatCard label="Tổng phụ cấp" value={`${payrollRows.reduce((sum, row) => sum + row.allowance, 0).toLocaleString("vi-VN")} đ`} />
+        <StatCard label="Tổng phạt" value={`${payrollRows.reduce((sum, row) => sum + row.fines, 0).toLocaleString("vi-VN")} đ`} />
+        <StatCard label="Tổng thưởng" value={`${payrollRows.reduce((sum, row) => sum + row.bonuses, 0).toLocaleString("vi-VN")} đ`} />
+        <StatCard label="Tổng thu nhập" value={`${payrollRows.reduce((sum, row) => sum + row.totalIncome, 0).toLocaleString("vi-VN")} đ`} />
+      </div>
 
       <PayrollTable rows={payrollRows} periodStart={from} periodEnd={to} />
     </div>

@@ -3,6 +3,7 @@ import type { SchedulePosting } from "@/lib/types/domain";
 import { ScheduleUploadDialog } from "./schedule-upload-dialog";
 import { DeleteScheduleButton } from "./delete-schedule-button";
 import { formatDateVn } from "@/lib/date";
+import { ScheduleImageZoom } from "@/app/employee/schedule-image-zoom";
 
 export default async function SchedulesPage() {
   const supabase = await createClient();
@@ -33,8 +34,7 @@ export default async function SchedulesPage() {
           return (
             <div key={posting.id} className="flex flex-col gap-2 rounded-lg border p-3">
               <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={publicUrl} alt="Lịch làm việc" className="h-full w-full object-cover" />
+                <ScheduleImageZoom src={publicUrl} showPreview showControls={false} />
               </div>
               <p className="text-sm font-medium">
                 Áp dụng từ {formatDateVn(posting.start_date)} đến {formatDateVn(posting.end_date)}
